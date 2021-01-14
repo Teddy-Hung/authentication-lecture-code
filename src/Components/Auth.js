@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import axios from 'axios'
 import {connect} from 'react-redux';
 import {getUser} from '../redux/reducer';
 
@@ -11,6 +12,11 @@ class Auth extends Component {
         }
     }
 
+    componentDidMount(){
+        if(this.props.user.email){
+            this.props.history.push('/dashboard')
+        }
+    }
     handleInput = e => {
         this.setState({
             [e.target.name]: e.target.value
@@ -19,11 +25,27 @@ class Auth extends Component {
 
     login = (e) => {
         e.preventDefault();
+        axios.post('api/login', {email: this.state.email, password: this.state.password})
+            .then(res=>{
+                //Place user info somewhere the App can access it (local state, redux state, etc)
+                this.props.getUser(res.data)
+
+                //Navigate user to the dashboard or other authenticated views
+                this.props.history.push('/dashboard')
+            }).catch(err=> console.log(err))
 
     }
 
     register = (e) => {
         e.preventDefault();
+        axios.post('api/register', {email: this.state.email, password: this.state.password})
+            .then(res=>{
+                //place the user info somewhere the app can access it
+                this.props.getUser(res.data)
+
+                //navigate user to dashboard
+                this.props.history.push('/dashboard')
+            }).catch(err=> console.log(err))
 
     }
 
@@ -43,4 +65,6 @@ class Auth extends Component {
     }
 }
 
-export default connect(null, {getUser})(Auth);
+const mapStateToProps = reduxState => reduxState
+
+export default connect(mapStateToProps, {getUser})(Auth);
